@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>正在跳转...</title>
+    <script>
+      (function () {
+        var base = "/nanbu-citrus-ai";
+        var path = window.location.pathname;
+        var route = path.indexOf(base) === 0 ? path.slice(base.length) : "/";
+        if (!route || route === "/") route = "/";
+        window.location.replace(
+          base + "/#" + route + window.location.search + window.location.hash
+        );
+      })();
+    </script>
+  </head>
+  <body>
+    正在跳转...
+  </body>
+</html>
