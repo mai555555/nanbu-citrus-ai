@@ -37,7 +37,8 @@ export default function ScanAnimation({
     return () => cancelAnimationFrame(raf);
   }, [duration, onComplete]);
 
-  const CurrentIcon = STEPS[step].icon;
+  const currentStep = STEPS[step] ?? STEPS[STEPS.length - 1];
+  const CurrentIcon = currentStep.icon;
 
   return (
     <div className="mx-auto max-w-md animate-fade-up">
@@ -65,7 +66,7 @@ export default function ScanAnimation({
       <div className="mt-6 space-y-4">
         <div className="flex items-center gap-3 text-citrus-200">
           <CurrentIcon className="h-5 w-5 animate-pulse" />
-          <span className="font-medium">{STEPS[step].text}</span>
+          <span className="font-medium">{currentStep.text}</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
           <div

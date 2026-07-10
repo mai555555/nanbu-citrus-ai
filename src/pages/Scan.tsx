@@ -25,6 +25,7 @@ type Stage = "select" | "scanning" | "result";
 export default function Scan() {
   const [stage, setStage] = useState<Stage>("select");
   const [imageSrc, setImageSrc] = useState<string>("");
+  const [selectedPestId, setSelectedPestId] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [saved, setSaved] = useState(false);
   const [location, setLocation] = useState("");
@@ -34,6 +35,7 @@ export default function Scan() {
   const handleSample = useCallback((key: string) => {
     const pest = PEST_MAP[key];
     if (!pest) return;
+    setSelectedPestId(key);
     setImageSrc(sampleSvgDataUri(pest.illustration));
     setResult(null);
     setSaved(false);
@@ -44,6 +46,7 @@ export default function Scan() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const src = e.target?.result as string;
+      setSelectedPestId(null);
       setImageSrc(src);
       setResult(null);
       setSaved(false);
@@ -53,23 +56,11 @@ export default function Scan() {
   }, []);
 
   const handleScanComplete = useCallback(() => {
-    // 根据当前图片推断 pestId：示例图用对应 pestId，上传图用随机
-    // 这里简化：扫描完成后用 mockScan 生成结果
-    // 通过 imageSrc 是否为 sampleSvgDataUri 判断
-    let pestId = PESTS[0].id;
-    for (const p of PESTS) {
-      if (imageSrc === sampleSvgDataUri(p.illustration)) {
-        pestId = p.id;
-        break;
-      }
-    }
-    // 若是上传图（非 sample），随机选一种
-    if (!PESTS.some((p) => imageSrc === sampleSvgDataUri(p.illustration))) {
-      pestId = PESTS[Math.floor(Math.random() * PESTS.length)].id;
-    }
+    const pestId =
+      selectedPestId ?? PESTS[Math.floor(Math.random() * PESTS.length)].id;
     setResult(mockScan(pestId));
     setStage("result");
-  }, [imageSrc]);
+  }, [selectedPestId]);
 
   const handleSave = useCallback(() => {
     if (!result) return;
@@ -87,6 +78,7 @@ export default function Scan() {
 
   const handleReset = useCallback(() => {
     setStage("select");
+    setSelectedPestId(null);
     setImageSrc("");
     setResult(null);
     setSaved(false);
@@ -190,6 +182,7 @@ export default function Scan() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {SAMPLE_IMAGES.map((s) => {
                   const pest = PEST_MAP[s.key];
+                  if (!pest) return null;
                   return (
                     <button
                       key={s.key}
@@ -270,6 +263,7 @@ function ResultView({
   onReset,
 }: ResultViewProps) {
   const pest = PEST_MAP[result.pestId];
+  if (!pest) return null;
   const needConfirm = result.confidence < 80;
 
   return (
@@ -417,6 +411,7 @@ function ResultView({
           <div className="space-y-2">
             {result.alternatives.map((alt) => {
               const p = PEST_MAP[alt.pestId];
+              if (!p) return null;
               return (
                 <Link
                   key={alt.pestId}
